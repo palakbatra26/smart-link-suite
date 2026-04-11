@@ -47,7 +47,7 @@ export default function LinksPage() {
     setEditId(null);
   };
 
-  const shortBase = "short.ly/";
+  const shortBase = import.meta.env.VITE_SHORT_URL || "localhost:3001/r/";
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -98,10 +98,10 @@ export default function LinksPage() {
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <a href={`https://${shortBase}${url.shortId}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-primary hover:underline">
+                    <a href={`${shortBase.includes("://") ? "" : "https://"}${shortBase}${url.shortId}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-primary hover:underline">
                       {shortBase}{url.shortId}
                     </a>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => { navigator.clipboard.writeText(`https://${shortBase}${url.shortId}`); toast.success("Copied!"); }}>
+                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => { navigator.clipboard.writeText(`${shortBase.includes("://") ? "" : "https://"}${shortBase}${url.shortId}`); toast.success("Copied!"); }}>
                       <Copy className="h-3 w-3" />
                     </Button>
                     {!url.isActive && <Badge variant="secondary">Disabled</Badge>}
@@ -157,7 +157,7 @@ export default function LinksPage() {
           <DialogHeader><DialogTitle>QR Code</DialogTitle></DialogHeader>
           <div className="flex flex-col items-center gap-4 mt-4">
             <div className="p-4 bg-background rounded-xl border" id="qr-container">
-              <QRCodeSVG value={`https://${shortBase}${qrUrl}`} size={200} />
+              <QRCodeSVG value={`${shortBase.includes("://") ? "" : "https://"}${shortBase}${qrUrl}`} size={200} />
             </div>
             <p className="text-sm text-muted-foreground">{shortBase}{qrUrl}</p>
             <Button onClick={() => {

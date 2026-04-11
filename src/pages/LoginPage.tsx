@@ -8,18 +8,27 @@ import { Link2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("john@example.com");
-  const [password, setPassword] = useState("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const { login } = useApp();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
+    if (!email || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+    setLoading(true);
+    try {
+      await login(email, password);
       toast.success("Welcome back!");
       navigate("/dashboard");
-    } else {
-      toast.error("Invalid credentials");
+    } catch (err: any) {
+      toast.error(err.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,17 +67,15 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required />
             </div>
-            <Button type="submit" className="w-full">
-              Sign in <ArrowRight className="ml-2 h-4 w-4" />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link to="/signup" className="text-primary font-medium hover:underline">Sign up</Link>
           </p>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
-            Demo: use any email (try john@example.com for admin)
-          </p>
+
         </div>
       </div>
     </div>

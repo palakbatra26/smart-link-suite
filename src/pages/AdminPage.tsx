@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useApp } from "@/context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,12 +9,20 @@ import { Users, Link2, MousePointerClick, Trash2, Shield } from "lucide-react";
 import { Navigate } from "react-router-dom";
 
 export default function AdminPage() {
-  const { user, allUsers, urls, analytics, deleteUrl } = useApp();
+  const { user, allUsers, urls, deleteUrl, adminStats, fetchAdminData } = useApp();
+
+  useEffect(() => {
+    if (user?.role === "admin") {
+      fetchAdminData();
+    }
+  }, [user, fetchAdminData]);
 
   if (user?.role !== "admin") return <Navigate to="/dashboard" replace />;
 
-  const totalClicks = urls.reduce((s, u) => s + u.clicks, 0);
+  const totalClicks = urls.reduce((s, u) => s + (u.clicks || 0), 0);
   const activeLinks = urls.filter(u => u.isActive).length;
+
+  const stats = adminStats || { totalUsers: allUsers.length, totalUrls: urls.length, totalClicks, activeLinks };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -26,10 +35,10 @@ export default function AdminPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Users", value: allUsers.length, icon: Users },
-          { label: "Total Links", value: urls.length, icon: Link2 },
-          { label: "Total Clicks", value: totalClicks.toLocaleString(), icon: MousePointerClick },
-          { label: "Active Links", value: activeLinks, icon: Link2 },
+          { label: "Total Users", value: stats.totalUsers, icon: Users },
+          { label: "Total Links", value: stats.totalUrls, icon: Link2 },
+          { label: "Total Clicks", value: stats.totalClicks.toLocaleString(), icon: MousePointerClick },
+          { label: "Active Links", value: stats.activeLinks, icon: Link2 },
         ].map(s => (
           <Card key={s.label}>
             <CardContent className="pt-6">
@@ -73,8 +82,8 @@ export default function AdminPage() {
                         <td className="p-4 font-medium text-foreground">{u.name}</td>
                         <td className="p-4 text-muted-foreground">{u.email}</td>
                         <td className="p-4"><Badge variant={u.role === "admin" ? "default" : "secondary"}>{u.role}</Badge></td>
-                        <td className="p-4 text-muted-foreground">{u.createdAt}</td>
-                        <td className="p-4 text-muted-foreground">{urls.filter(l => l.userId === u.id).length}</td>
+                        <td className="p-4 text-muted-foreground">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "-"}</td>
+                        <td className="p-4 text-muted-foreground">{urls.filter(l => l.userId === u.id || l.userId === u._id).length}</td>
                       </tr>
                     ))}
                   </tbody>

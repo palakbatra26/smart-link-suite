@@ -11,15 +11,29 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const { signup } = useApp();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) { toast.error("Password must be at least 6 characters"); return; }
-    if (signup(name, email, password)) {
+    if (!name || !email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (password.length < 6) { 
+      toast.error("Password must be at least 6 characters"); 
+      return; 
+    }
+    setLoading(true);
+    try {
+      await signup(name, email, password);
       toast.success("Account created!");
       navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,8 +76,8 @@ export default function SignupPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 6 characters" required />
             </div>
-            <Button type="submit" className="w-full">
-              Create account <ArrowRight className="ml-2 h-4 w-4" />
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Creating account..." : "Create account"} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
